@@ -22,6 +22,7 @@ TELEGRAM_BOT_TOKEN=...
 OPENAI_API_KEY=...
 OPENAI_MODEL=gpt-5.4-mini
 TELEGRAM_PROXY=
+USE_TOR_FOR_TELEGRAM=true
 ```
 
 Проверить генерацию слайдов без Telegram и OpenAI:
@@ -54,12 +55,19 @@ TELEGRAM_BOT_TOKEN=...
 OPENAI_API_KEY=...
 OPENAI_MODEL=gpt-5.4-mini
 TELEGRAM_PROXY=
+USE_TOR_FOR_TELEGRAM=true
 ```
 
 Если сервер не может подключиться к Telegram API, укажите SOCKS/HTTP proxy:
 
 ```env
 TELEGRAM_PROXY=socks5://user:password@host:port
+```
+
+По умолчанию Docker-запуск может поднять локальный Tor SOCKS-прокси для Telegram:
+
+```env
+USE_TOR_FOR_TELEGRAM=true
 ```
 
 Запуск:

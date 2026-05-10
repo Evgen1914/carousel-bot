@@ -6,6 +6,7 @@ services:
     environment:
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       TELEGRAM_PROXY: ${TELEGRAM_PROXY:-}
+      USE_TOR_FOR_TELEGRAM: ${USE_TOR_FOR_TELEGRAM:-true}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5.4-mini}
     volumes:
