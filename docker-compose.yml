@@ -1,0 +1,10 @@
+services:
+  carousel-bot:
+    build: .
+    container_name: carousel-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./output:/app/output
+

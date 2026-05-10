@@ -35,6 +35,61 @@ carousel-sample
 carousel-bot
 ```
 
+## Запуск на сервере через Docker
+
+На сервере должен быть установлен Docker и Docker Compose.
+
+```bash
+git clone https://github.com/Evgen1914/carousel-bot.git
+cd carousel-bot
+cp .env.example .env
+nano .env
+```
+
+Заполните `.env`:
+
+```env
+TELEGRAM_BOT_TOKEN=...
+OPENAI_API_KEY=...
+OPENAI_MODEL=gpt-5.4-mini
+```
+
+Запуск:
+
+```bash
+docker compose up -d --build
+```
+
+Проверить статус:
+
+```bash
+docker compose ps
+```
+
+Посмотреть логи:
+
+```bash
+docker compose logs -f carousel-bot
+```
+
+Перезапустить:
+
+```bash
+docker compose restart carousel-bot
+```
+
+Остановить:
+
+```bash
+docker compose down
+```
+
+После запуска на сервере остановите локальный macOS LaunchAgent, чтобы два экземпляра бота не читали одни и те же сообщения:
+
+```bash
+launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/com.evgen.carousel-bot.plist
+```
+
 ## Автозапуск на macOS
 
 В проекте есть скрипт запуска:

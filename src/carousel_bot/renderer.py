@@ -10,11 +10,13 @@ WIDTH = 1080
 HEIGHT = 1350
 SAFE_X = 92
 FONT_CANDIDATES = [
+    "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
     "/System/Library/Fonts/Supplemental/Arial.ttf",
     "/Library/Fonts/Arial.ttf",
     "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
 ]
 BOLD_FONT_CANDIDATES = [
+    "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
     "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
     "/Library/Fonts/Arial Bold.ttf",
     "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
