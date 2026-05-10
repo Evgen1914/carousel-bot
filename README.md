@@ -35,6 +35,45 @@ carousel-sample
 carousel-bot
 ```
 
+## Автозапуск на macOS
+
+В проекте есть скрипт запуска:
+
+```bash
+scripts/run_bot.sh
+```
+
+Локальный LaunchAgent установлен в:
+
+```bash
+~/Library/LaunchAgents/com.evgen.carousel-bot.plist
+```
+
+Проверить статус:
+
+```bash
+launchctl print gui/$(id -u)/com.evgen.carousel-bot
+```
+
+Перезапустить:
+
+```bash
+launchctl kickstart -k gui/$(id -u)/com.evgen.carousel-bot
+```
+
+Остановить:
+
+```bash
+launchctl bootout gui/$(id -u) ~/Library/LaunchAgents/com.evgen.carousel-bot.plist
+```
+
+Логи пишутся в:
+
+```bash
+logs/bot.out.log
+logs/bot.err.log
+```
+
 ## Как пользоваться
 
 В Telegram отправьте боту тему, например:
