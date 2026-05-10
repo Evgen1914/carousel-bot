@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import asyncio
+import socket
 from datetime import datetime
 from pathlib import Path
 
 from aiogram import Bot, Dispatcher, F
+from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.filters import CommandStart
 from aiogram.types import BufferedInputFile, Message
 
@@ -60,11 +62,23 @@ async def main() -> None:
     if not settings.openai_api_key:
         raise RuntimeError("OPENAI_API_KEY is not set")
 
-    bot = Bot(token=settings.telegram_bot_token)
+    session = AiohttpSession(proxy=settings.telegram_proxy or None)
+    # Some servers prefer broken IPv6 routes for api.telegram.org. Keep Telegram
+    # traffic on IPv4 unless a proxy is configured.
+    if not settings.telegram_proxy:
+        session._connector_init["family"] = socket.AF_INET
+
+    bot = Bot(token=settings.telegram_bot_token, session=session)
     dp = Dispatcher()
     dp.message.register(start, CommandStart())
     dp.message.register(generate_carousel, F.text)
-    await dp.start_polling(bot)
+
+    while True:
+        try:
+            await dp.start_polling(bot)
+        except Exception as exc:
+            print(f"Polling failed: {type(exc).__name__}: {exc}. Retrying in 20 seconds.", flush=True)
+            await asyncio.sleep(20)
 
 
 if __name__ == "__main__":

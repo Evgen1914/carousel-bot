@@ -5,6 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     telegram_bot_token: str = ""
+    telegram_proxy: str = ""
     openai_api_key: str = ""
     openai_model: str = "gpt-5.4-mini"
 
@@ -14,4 +15,3 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
-
