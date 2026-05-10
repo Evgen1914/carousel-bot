@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=75.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "instagram-carousel-bot"
+version = "0.1.0"
+description = "Telegram bot for generating Instagram carousel slides for gynecology education."
+requires-python = ">=3.11"
+dependencies = [
+    "aiogram>=3.17.0",
+    "openai>=1.99.0",
+    "pillow>=11.0.0",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.7.0",
+    "python-dotenv>=1.0.1",
+]
+
+[project.scripts]
+carousel-bot = "carousel_bot.bot:run"
+carousel-sample = "carousel_bot.sample_render:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
