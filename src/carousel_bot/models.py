@@ -15,7 +15,7 @@ class CarouselPost(BaseModel):
     topic: str
     audience: str
     tone: str
-    slides: list[Slide] = Field(min_length=5, max_length=9)
+    slides: list[Slide] = Field(min_length=1, max_length=20)
     caption: str
     hashtags: list[str] = Field(min_length=5, max_length=14)
     safety_note: str

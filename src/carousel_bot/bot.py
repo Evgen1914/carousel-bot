@@ -20,7 +20,11 @@ OUTPUT_ROOT = Path("output")
 
 def _caption_text(caption: str, hashtags: list[str], safety_note: str) -> str:
     tags = " ".join(hashtags)
-    return f"{caption}\n\n{safety_note}\n\n{tags}"
+    parts = [caption]
+    if safety_note.strip():
+        parts.append(safety_note)
+    parts.append(tags)
+    return "\n\n".join(parts)
 
 
 async def start(message: Message) -> None:
