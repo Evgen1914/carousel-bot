@@ -78,23 +78,6 @@ def _fit_lines(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.ImageFont, 
     return lines
 
 
-def _draw_multiline(
-    draw: ImageDraw.ImageDraw,
-    xy: tuple[int, int],
-    text: str,
-    font: ImageFont.ImageFont,
-    fill: str,
-    max_width: int,
-    line_gap: int,
-) -> int:
-    x, y = xy
-    for line in _fit_lines(draw, text, font, max_width):
-        draw.text((x, y), line, font=font, fill=fill)
-        bbox = draw.textbbox((x, y), line, font=font)
-        y += bbox[3] - bbox[1] + line_gap
-    return y
-
-
 def _measure_block(
     draw: ImageDraw.ImageDraw,
     text: str,
@@ -108,36 +91,6 @@ def _measure_block(
         bbox = draw.textbbox((0, 0), line, font=font)
         total += bbox[3] - bbox[1] + line_gap
     return lines, max(0, total - line_gap)
-
-
-def _draw_fitted_block(
-    draw: ImageDraw.ImageDraw,
-    xy: tuple[int, int],
-    text: str,
-    fill: str,
-    max_width: int,
-    max_height: int,
-    start_size: int,
-    min_size: int,
-    bold: bool = False,
-) -> int:
-    size = start_size
-    line_gap = max(8, size // 5)
-    while size > min_size:
-        font = _font(size, bold=bold)
-        line_gap = max(8, size // 5)
-        lines, height = _measure_block(draw, text, font, max_width, line_gap)
-        if height <= max_height:
-            break
-        size -= 2
-
-    x, y = xy
-    font = _font(size, bold=bold)
-    for line in lines:
-        draw.text((x, y), line, font=font, fill=fill)
-        bbox = draw.textbbox((x, y), line, font=font)
-        y += bbox[3] - bbox[1] + line_gap
-    return y
 
 
 def _fitted_block_layout(
