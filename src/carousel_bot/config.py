@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     telegram_proxy: str = ""
     openai_api_key: str = ""
     openai_model: str = "gpt-5.4-mini"
+    openai_transcription_model: str = "gpt-4o-mini-transcribe"
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

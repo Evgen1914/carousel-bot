@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import socket
 from datetime import datetime
+from io import BytesIO
 from pathlib import Path
 
 from aiogram import Bot, Dispatcher, F
@@ -29,20 +30,15 @@ def _caption_text(caption: str, hashtags: list[str], safety_note: str) -> str:
 
 async def start(message: Message) -> None:
     await message.answer(
-        "Пришлите тему карусели для Instagram.\n\n"
+        "Пришлите тему карусели для Instagram текстом или голосовым сообщением.\n\n"
         "Например: «Мифы о болезненных месячных» или подробный бриф с ЦА, тоном и количеством слайдов."
     )
 
 
-async def generate_carousel(message: Message) -> None:
-    if not message.text:
-        await message.answer("Пришлите текстовый бриф: тему, ЦА, тон и желаемое количество слайдов.")
-        return
-
-    status = await message.answer("Готовлю сценарий и слайды. Обычно это занимает 30-90 секунд.")
+async def _send_carousel(message: Message, brief: str, status: Message) -> None:
     try:
         generator = CarouselGenerator()
-        post = await asyncio.to_thread(generator.generate, message.text)
+        post = await asyncio.to_thread(generator.generate, brief)
         run_dir = OUTPUT_ROOT / datetime.now().strftime("%Y%m%d_%H%M%S")
         paths = await asyncio.to_thread(render_carousel, post, run_dir)
 
@@ -55,6 +51,43 @@ async def generate_carousel(message: Message) -> None:
     except Exception as exc:
         await status.edit_text(
             "Не получилось сгенерировать карусель. Проверьте TELEGRAM_BOT_TOKEN, OPENAI_API_KEY и попробуйте еще раз.\n\n"
+            f"Техническая причина: {type(exc).__name__}: {exc}"
+        )
+
+
+async def generate_carousel(message: Message) -> None:
+    if not message.text:
+        await message.answer("Пришлите бриф текстом или голосовым сообщением: тему, ЦА, тон и желаемое количество слайдов.")
+        return
+
+    status = await message.answer("Готовлю сценарий и слайды. Обычно это занимает 30-90 секунд.")
+    await _send_carousel(message, message.text, status)
+
+
+async def generate_voice_carousel(message: Message, bot: Bot) -> None:
+    if not message.voice:
+        await message.answer("Пришлите голосовое сообщение с брифом для карусели.")
+        return
+
+    status = await message.answer("Расшифровываю голосовое сообщение.")
+    try:
+        file = await bot.get_file(message.voice.file_id)
+        if not file.file_path:
+            raise RuntimeError("Telegram did not return a voice file path")
+
+        buffer = BytesIO()
+        await bot.download_file(file.file_path, destination=buffer)
+        generator = CarouselGenerator()
+        brief = await asyncio.to_thread(generator.transcribe_voice, buffer.getvalue())
+        if not brief:
+            await status.edit_text("Не получилось разобрать голосовое. Попробуйте записать чуть четче или отправить бриф текстом.")
+            return
+
+        await status.edit_text(f"Понял бриф: {brief}\n\nГотовлю сценарий и слайды.")
+        await _send_carousel(message, brief, status)
+    except Exception as exc:
+        await status.edit_text(
+            "Не получилось обработать голосовое сообщение. Попробуйте еще раз или отправьте бриф текстом.\n\n"
             f"Техническая причина: {type(exc).__name__}: {exc}"
         )
 
@@ -75,6 +108,7 @@ async def main() -> None:
     bot = Bot(token=settings.telegram_bot_token, session=session)
     dp = Dispatcher()
     dp.message.register(start, CommandStart())
+    dp.message.register(generate_voice_carousel, F.voice)
     dp.message.register(generate_carousel, F.text)
 
     while True:
