@@ -1,5 +1,3 @@
-from io import BytesIO
-
 from openai import OpenAI
 
 from carousel_bot.config import get_settings
@@ -15,7 +13,6 @@ class CarouselGenerator:
     def __init__(self) -> None:
         settings = get_settings()
         self.model = settings.openai_model
-        self.transcription_model = settings.openai_transcription_model
         self.client = OpenAI(api_key=settings.openai_api_key)
 
     def generate(self, brief: str) -> CarouselPost:
@@ -35,16 +32,6 @@ class CarouselGenerator:
             },
         )
         return CarouselPost.model_validate_json(response.output_text)
-
-    def transcribe_voice(self, audio: bytes, filename: str = "voice.ogg") -> str:
-        audio_file = BytesIO(audio)
-        audio_file.name = filename
-        transcription = self.client.audio.transcriptions.create(
-            model=self.transcription_model,
-            file=audio_file,
-            language="ru",
-        )
-        return transcription.text.strip()
 
 
 def sample_carousel() -> CarouselPost:

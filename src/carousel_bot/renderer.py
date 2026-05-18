@@ -27,20 +27,20 @@ BOLD_FONT_CANDIDATES = [
     "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
 ]
 SERIF_FONT_CANDIDATES = [
-    "/System/Library/Fonts/NewYork.ttf",
-    "/System/Library/Fonts/Supplemental/STIXTwoText.ttf",
     "/System/Library/Fonts/Supplemental/Georgia.ttf",
     "/System/Library/Fonts/Supplemental/Times New Roman.ttf",
+    "/System/Library/Fonts/Supplemental/STIXTwoText.ttf",
+    "/System/Library/Fonts/NewYork.ttf",
     "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf",
 ]
 SERIF_BOLD_FONT_CANDIDATES = [
-    "/System/Library/Fonts/Supplemental/STIXTwoText.ttf",
     "/System/Library/Fonts/Supplemental/Georgia Bold.ttf",
     "/System/Library/Fonts/Supplemental/Times New Roman Bold.ttf",
+    "/System/Library/Fonts/Supplemental/STIXTwoText.ttf",
     "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf",
 ]
 
-PALETTE = {"bg": "#F8F6F2", "ink": "#333333", "muted": "#494949", "accent": "#EBD5CC", "line": "#383838"}
+PALETTE = {"bg": "#F8F6F2", "ink": "#333333", "muted": "#494949", "accent": "#E8B7AA", "line": "#383838"}
 
 
 def _font_path(candidates: list[str]) -> str | None:
@@ -168,7 +168,7 @@ def render_slide(slide: Slide, index: int, total: int, output_dir: Path) -> Path
 
     _draw_frame(draw, palette, index, total)
 
-    eyebrow = _visible_eyebrow(slide.eyebrow)
+    eyebrow = "" if index == total else _visible_eyebrow(slide.eyebrow)
     eyebrow_font = _font(30, bold=True)
     eyebrow_height = 0
     eyebrow_gap = 34
@@ -183,6 +183,7 @@ def render_slide(slide: Slide, index: int, total: int, output_dir: Path) -> Path
         310,
         start_size=88,
         min_size=58,
+        bold=True,
         serif=True,
     )
     body_font, body_lines, body_height, body_gap = _fitted_block_layout(
