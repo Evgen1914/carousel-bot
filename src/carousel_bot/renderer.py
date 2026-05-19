@@ -9,11 +9,6 @@ from carousel_bot.models import CarouselPost, Slide
 WIDTH = 1080
 HEIGHT = 1350
 SAFE_X = 92
-CONTENT_TOP = 230
-CONTENT_BOTTOM = 1065
-FRAME_X = 110
-TOP_LINE_Y = 96
-BOTTOM_LINE_Y = 1212
 FONT_CANDIDATES = [
     "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
     "/System/Library/Fonts/Supplemental/Arial.ttf",
@@ -26,21 +21,11 @@ BOLD_FONT_CANDIDATES = [
     "/Library/Fonts/Arial Bold.ttf",
     "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
 ]
-SERIF_FONT_CANDIDATES = [
-    "/System/Library/Fonts/Supplemental/Georgia.ttf",
-    "/System/Library/Fonts/Supplemental/Times New Roman.ttf",
-    "/System/Library/Fonts/Supplemental/STIXTwoText.ttf",
-    "/System/Library/Fonts/NewYork.ttf",
-    "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf",
+PALETTES = [
+    {"bg": "#F8FBFA", "ink": "#243333", "muted": "#627472", "accent": "#C9606A", "soft": "#DCEDE9"},
+    {"bg": "#FBFAF7", "ink": "#28313A", "muted": "#6D737A", "accent": "#2E8F83", "soft": "#F3D9D4"},
+    {"bg": "#F7FAFC", "ink": "#242B35", "muted": "#687386", "accent": "#B85C7A", "soft": "#DDE8F2"},
 ]
-SERIF_BOLD_FONT_CANDIDATES = [
-    "/System/Library/Fonts/Supplemental/Georgia Bold.ttf",
-    "/System/Library/Fonts/Supplemental/Times New Roman Bold.ttf",
-    "/System/Library/Fonts/Supplemental/STIXTwoText.ttf",
-    "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf",
-]
-
-PALETTE = {"bg": "#F8F6F2", "ink": "#333333", "muted": "#494949", "accent": "#E8B7AA", "line": "#383838"}
 
 
 def _font_path(candidates: list[str]) -> str | None:
@@ -52,13 +37,6 @@ def _font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont | ImageFont.I
     if path:
         return ImageFont.truetype(path, size=size)
     return ImageFont.load_default()
-
-
-def _serif_font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
-    path = _font_path(SERIF_BOLD_FONT_CANDIDATES if bold else SERIF_FONT_CANDIDATES)
-    if path:
-        return ImageFont.truetype(path, size=size)
-    return _font(size, bold=bold)
 
 
 def _fit_lines(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.ImageFont, max_width: int) -> list[str]:
@@ -101,22 +79,21 @@ def _fitted_block_layout(
     start_size: int,
     min_size: int,
     bold: bool = False,
-    serif: bool = False,
 ) -> tuple[ImageFont.ImageFont, list[str], int, int]:
     size = start_size
     line_gap = max(8, size // 5)
     lines: list[str] = []
     height = 0
     while size > min_size:
-        font = _serif_font(size, bold=bold) if serif else _font(size, bold=bold)
-        line_gap = max(8, size // 6 if serif else size // 5)
+        font = _font(size, bold=bold)
+        line_gap = max(8, size // 5)
         lines, height = _measure_block(draw, text, font, max_width, line_gap)
         if height <= max_height:
             return font, lines, height, line_gap
         size -= 2
 
-    font = _serif_font(size, bold=bold) if serif else _font(size, bold=bold)
-    line_gap = max(8, size // 6 if serif else size // 5)
+    font = _font(size, bold=bold)
+    line_gap = max(8, size // 5)
     lines, height = _measure_block(draw, text, font, max_width, line_gap)
     return font, lines, height, line_gap
 
@@ -137,14 +114,10 @@ def _draw_lines(
     return y
 
 
-def _draw_frame(draw: ImageDraw.ImageDraw, palette: dict[str, str], index: int, total: int) -> None:
-    draw.line((FRAME_X, TOP_LINE_Y, WIDTH - FRAME_X, TOP_LINE_Y), fill=palette["line"], width=3)
-    draw.line((FRAME_X, BOTTOM_LINE_Y, WIDTH - FRAME_X, BOTTOM_LINE_Y), fill=palette["line"], width=3)
-    draw.text((FRAME_X, 122), "Доктор Ripsi", font=_font(24, bold=True), fill=palette["ink"])
-    page = f"{index:02}/{total:02}"
-    page_font = _font(24, bold=True)
-    page_width = draw.textlength(page, font=page_font)
-    draw.text((WIDTH - FRAME_X - page_width, 122), page, font=page_font, fill=palette["ink"])
+def _draw_brand(draw: ImageDraw.ImageDraw, palette: dict[str, str], index: int, total: int) -> None:
+    draw.rounded_rectangle((SAFE_X, 78, SAFE_X + 230, 126), radius=24, fill=palette["soft"])
+    draw.text((SAFE_X + 24, 89), "Доктор Ripsi", font=_font(22, bold=True), fill=palette["ink"])
+    draw.text((WIDTH - SAFE_X - 90, 88), f"{index:02}/{total:02}", font=_font(30, bold=True), fill=palette["accent"])
 
 
 def _visible_eyebrow(text: str) -> str:
@@ -155,18 +128,28 @@ def _draw_last_slide_cta(draw: ImageDraw.ImageDraw, palette: dict[str, str]) -> 
     cta = "ЗАПИСЬ НА КОНСУЛЬТАЦИЮ"
     cta_font = _font(30, bold=True)
     arrow_font = _font(42, bold=True)
-    draw.text((FRAME_X, 1120), cta, font=cta_font, fill=palette["ink"])
-    pill = (WIDTH - FRAME_X - 176, 1102, WIDTH - FRAME_X, 1160)
+    draw.rounded_rectangle((SAFE_X, 1010, WIDTH - SAFE_X, 1218), radius=34, fill="#FFFFFF")
+    draw.text((SAFE_X + 36, 1080), cta, font=cta_font, fill=palette["ink"])
+    pill = (WIDTH - SAFE_X - 176, 1065, WIDTH - SAFE_X - 36, 1123)
     draw.rounded_rectangle(pill, radius=29, fill=palette["accent"])
-    draw.text((pill[0] + 71, pill[1] + 2), "↓", font=arrow_font, fill=palette["ink"])
+    draw.text((pill[0] + 52, pill[1] + 2), "↓", font=arrow_font, fill=palette["ink"])
+
+
+def _draw_disclaimer(draw: ImageDraw.ImageDraw, palette: dict[str, str]) -> None:
+    footer = "Образовательный материал. Не заменяет консультацию врача."
+    draw.rounded_rectangle((SAFE_X, 1010, WIDTH - SAFE_X, 1218), radius=34, fill="#FFFFFF")
+    _draw_lines(draw, (SAFE_X + 36, 1054), _fit_lines(draw, footer, _font(30), WIDTH - SAFE_X * 2 - 72), _font(30), palette["muted"], 10)
 
 
 def render_slide(slide: Slide, index: int, total: int, output_dir: Path) -> Path:
-    palette = PALETTE
+    palette = PALETTES[(index - 1) % len(PALETTES)]
     image = Image.new("RGB", (WIDTH, HEIGHT), palette["bg"])
     draw = ImageDraw.Draw(image)
 
-    _draw_frame(draw, palette, index, total)
+    draw.ellipse((WIDTH - 370, -160, WIDTH + 190, 400), fill=palette["soft"])
+    draw.ellipse((-180, HEIGHT - 300, 280, HEIGHT + 160), fill=palette["soft"])
+
+    _draw_brand(draw, palette, index, total)
 
     eyebrow = "" if index == total else _visible_eyebrow(slide.eyebrow)
     eyebrow_font = _font(30, bold=True)
@@ -181,10 +164,9 @@ def render_slide(slide: Slide, index: int, total: int, output_dir: Path) -> Path
         slide.title,
         WIDTH - SAFE_X * 2,
         310,
-        start_size=88,
-        min_size=58,
+        start_size=72,
+        min_size=52,
         bold=True,
-        serif=True,
     )
     body_font, body_lines, body_height, body_gap = _fitted_block_layout(
         draw,
@@ -196,8 +178,9 @@ def render_slide(slide: Slide, index: int, total: int, output_dir: Path) -> Path
     )
     title_body_gap = 48
     content_height = eyebrow_height + title_height + title_body_gap + body_height
-    content_area_height = CONTENT_BOTTOM - CONTENT_TOP
-    y = CONTENT_TOP + max(0, (content_area_height - content_height) // 2)
+    content_top = 238 if eyebrow else 292
+    content_bottom = 910
+    y = content_top + max(0, (content_bottom - content_top - content_height) // 2)
 
     if eyebrow:
         draw.text((SAFE_X, y), eyebrow.upper(), font=eyebrow_font, fill=palette["accent"])
@@ -209,6 +192,8 @@ def render_slide(slide: Slide, index: int, total: int, output_dir: Path) -> Path
 
     if index == total:
         _draw_last_slide_cta(draw, palette)
+    else:
+        _draw_disclaimer(draw, palette)
 
     output_dir.mkdir(parents=True, exist_ok=True)
     path = output_dir / f"slide_{index:02}.png"
